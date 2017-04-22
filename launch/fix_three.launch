@@ -1,0 +1,23 @@
+<!-- xml -->
+<launch>
+
+  <node name="hector_manager" pkg="micros_flocking" type="hector_manager" output="screen">
+  <param name='robotnum' value='3'/>
+  </node>
+
+  <group ns='uav0'>
+  <node name="fix_alpha" pkg="quadrotor_code" type="fixalpha" output="screen">
+  </node>
+  </group>
+  
+  <group ns='uav1'>
+  <node name="fix_alpha" pkg="quadrotor_code" type="fixalpha" output="screen">
+  </node>
+   </group>
+   
+  <group ns='uav2'>
+  <node name="fix_alpha" pkg="quadrotor_code" type="fixalpha" output="screen">
+  </node>
+   </group>
+  
+</launch>
