@@ -124,6 +124,7 @@ add_executable(gpstest src/gpstest.cpp)
 add_executable(fixalpha src/fix_alpha.cpp) 
 add_executable(hector_reset src/hector_reset.cpp) 
 add_executable(bebop_manager src/bebop_manager.cpp) 
+add_executable(fly_circle src/fly_circle.cpp)
 #add_dependencies(gpstest ${micros_flocking_EXPORTED_TARGETS})
 
 #add_dependencies(bebop_manager ${quadrotor_code_EXPORTED_TARGETS})
@@ -138,6 +139,9 @@ target_link_libraries( gpstest
    ${catkin_LIBRARIES}
  )
  target_link_libraries( bebop_manager 
+   ${catkin_LIBRARIES}
+ )
+ target_link_libraries( fly_circle 
    ${catkin_LIBRARIES}
  )
 ## Specify additional locations of header files
