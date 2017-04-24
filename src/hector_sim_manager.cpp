@@ -21,6 +21,11 @@ using namespace std;
 #define perror 0  //value
 #define verror 0 //rate
 double PI=acos(-1);
+
+double delta_dis=5; //无人机之间的间距
+int stand_vx=0, stand_vy=0;//作为标准的无人机的虚拟坐标
+double stand_x, stand_y;//作为标准的无人机的实际坐标
+
 class OdomHandle
 {
     public:
@@ -32,6 +37,10 @@ class OdomHandle
     double _pz,_vz,_theta;
     int _r_id; 
     bool yawrcv,velrcv,fixrcv;
+
+    double start_x, start_y;//起始位置坐标
+    int vx, vy;//在虚拟坐标系中的坐标
+    double delta_x,delta_y;//误差向量
    
     OdomHandle(int r_id)
     {
@@ -79,36 +88,6 @@ class OdomHandle
       
     }
     
-    void yawcb(const bebop_msgs::Ardrone3PilotingStateAttitudeChanged::ConstPtr & msg)
-    {
-        double msgtheta = msg->yaw;
-        _theta = msgtheta;
-        /*
-        if (msgtheta >= 0)
-        {
-             _theta = PI/2 - msgtheta;
-        }
-        else
-        {
-            if(msgtheta > -PI/2)
-            {
-                _theta = PI/2 - msgtheta;
-            }
-            else
-            {
-                _theta = - 3*PI/2 -msgtheta;
-            }
-        }*/
-        yawrcv = true;
-    }
-
-    void velcb(const bebop_msgs::Ardrone3PilotingStateSpeedChanged::ConstPtr & msg)
-    {
-        _vx = msg->speedX;
-        _vy = msg->speedY;
-        velrcv = true;
-    }
-    
     void fixcb(const sensor_msgs::NavSatFix::ConstPtr & msg)
     {
         geographic_msgs::GeoPoint geo_pt;
@@ -118,6 +97,28 @@ class OdomHandle
         geodesy::UTMPoint utm_pt(geo_pt);
         _py = utm_pt.easting;
         _px = utm_pt.northing;
+
+        static int count=0;
+        if(count<30)
+        {
+            start_x=utm_pt.northing;
+            start_y=utm_pt.easting;
+
+            if(vx==stand_vx && vy==stand_vy && count==15)
+            {
+                stand_x=start_x;
+                stand_y=start_y;
+            }
+
+            if(count==29)
+            {
+                delta_x=((vx-stand_vx)*delta_dis+stand_x)-start_x;
+                delta_y=((vy-stand_vy)*delta_dis+stand_y)-start_y;
+            }
+
+            count++;
+        }
+
         fixrcv = true;
     }
     
@@ -162,6 +163,11 @@ int main(int argc, char** argv)
    for(int i=0;i<robotnum;i++)
    {
       OdomHandle *p=new OdomHandle(i);
+      int x=i/3;
+      int y=i%3;
+      p->vx=x;
+      p->vy=y;
+
       odom_list.push_back(p);
       adj_list.push_back(vector<int>());
    }

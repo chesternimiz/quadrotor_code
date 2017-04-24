@@ -122,7 +122,7 @@ catkin_package(
 ## Build ##
 ###########
 add_executable(gpstest src/gpstest.cpp) 
-add_executable(fixalpha src/fix_alpha.cpp) 
+#add_executable(fixalpha src/fix_alpha.cpp) 
 add_executable(hector_reset src/hector_reset.cpp) 
 add_executable(bebop_manager src/bebop_manager.cpp) 
 add_executable(fly_circle src/fly_circle.cpp)
@@ -134,9 +134,9 @@ add_executable(hector_sim_manager src/hector_sim_manager.cpp)
 target_link_libraries( gpstest 
    ${catkin_LIBRARIES}
  )
- target_link_libraries( fixalpha 
-   ${catkin_LIBRARIES}
- )
+ #target_link_libraries( fixalpha 
+  # ${catkin_LIBRARIES}
+ #)
   target_link_libraries( hector_reset 
    ${catkin_LIBRARIES}
  )
