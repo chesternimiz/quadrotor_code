@@ -56,6 +56,7 @@ find_package(catkin REQUIRED COMPONENTS
    msg
    FILES
    Status.msg
+   Neighbor.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -125,6 +126,7 @@ add_executable(fixalpha src/fix_alpha.cpp)
 add_executable(hector_reset src/hector_reset.cpp) 
 add_executable(bebop_manager src/bebop_manager.cpp) 
 add_executable(fly_circle src/fly_circle.cpp)
+add_executable(hector_sim_manager src/hector_sim_manager.cpp)
 #add_dependencies(gpstest ${micros_flocking_EXPORTED_TARGETS})
 
 #add_dependencies(bebop_manager ${quadrotor_code_EXPORTED_TARGETS})
@@ -142,6 +144,9 @@ target_link_libraries( gpstest
    ${catkin_LIBRARIES}
  )
  target_link_libraries( fly_circle 
+   ${catkin_LIBRARIES}
+ )
+ target_link_libraries( hector_sim_manager 
    ${catkin_LIBRARIES}
  )
 ## Specify additional locations of header files

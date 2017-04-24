@@ -6,6 +6,7 @@
 #include "micros_flocking/Gradient.h"
 #include "sensor_msgs/NavSatFix.h"
 #include "nav_msgs/Odometry.h"
+#include "quadrotor_code/Status.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -55,7 +56,8 @@ double pm1=0.03,pm2=0.3,pm3=0.05;
 class NeighborHandle
 {
     public:
-    ros::Subscriber sub,sub2;
+    //ros::Subscriber sub,sub2;
+    ros::Subscriber subStatus;
     double _px,_py,_vx,_vy;
     pair<double,double> _position,_velocity;
     int _r_id; 
@@ -65,12 +67,14 @@ class NeighborHandle
     {
         ros::NodeHandle n;
         stringstream ss;
-        //ss<<"/uav"<<r_id<<"/position";
+        ss<<"/uav"<<r_id<<"/position";
+        subStatus = n.subscribe(ss.str(), 1000, &NeighborHandle::statuscb,this);
+        /*
         ss<<"/uav"<<r_id<<"/fix";
         sub = n.subscribe(ss.str(), 1000, &NeighborHandle::fixcb,this);
         stringstream ss1;
         ss1<<"/uav"<<r_id<<"/ground_truth/state";
-        sub2 = n.subscribe(ss1.str(), 1000, &NeighborHandle::velcb,this);
+        sub2 = n.subscribe(ss1.str(), 1000, &NeighborHandle::velcb,this);*/
         _px=0;
         _py=0;
         _vx=0;
@@ -135,9 +139,19 @@ class NeighborHandle
         
     }
     
+    void statuscb(const quadrotor_code::Status::ConstPtr & msg)
+    {
+        _px = msg -> px;
+        _py = msg -> py;
+        _vx = msg -> vx;
+        _vy = msg -> vy;
+        _position.first=_px;_position.second=_py;
+        _velocity.first=_vx;_velocity.second=_vy;
+    }
+    
     void close()
     {
-        sub.shutdown();
+        subStatus.shutdown();
     }
 };
 static list<NeighborHandle*> neighbor_list;
@@ -203,14 +217,14 @@ void my_vpoint_position_cb(const micros_flocking::Position::ConstPtr & msg)
 }
 
 
-void my_theta_cb(const micros_flocking::Position::ConstPtr & msg)
+void my_theta_cb(const quadrotor_code::Status::ConstPtr & msg)
 {
-/*
+
     my_position.first = msg->px;
     my_position.second = msg->py;
     my_velocity.first = msg->vx;
     my_velocity.second = msg->vy;
-*/    
+    
     my_theta = msg->theta;
     //my_gradient = msg->gradient;
     //cout<<"my pose updated"<<endl;
@@ -431,10 +445,10 @@ int main(int argc, char** argv)
    ros::Publisher pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
    ros::Subscriber sub = n.subscribe("neighbor", 1000, neighbor_cb);
   //test ros::Subscriber sub_vpoint_pos = n.subscribe("vpoint_position", 1000, my_vpoint_position_cb);
-   ros::Subscriber sub_pos = n.subscribe("fix", 1000, my_position_cb);
+   //ros::Subscriber sub_pos = n.subscribe("fix", 1000, my_position_cb);
    ros::Subscriber sub_theta = n.subscribe("position", 1000, my_theta_cb);
-   //neighbor_list.push_back(NeighborHandle(1));
-   ros::Publisher gradient_pub = n.advertise<micros_flocking::Gradient>("gradient",1000);
+  
+  // ros::Publisher gradient_pub = n.advertise<micros_flocking::Gradient>("gradient",1000);
    ros::Publisher vpoint_pub = n.advertise<micros_flocking::Position>("vpoint_position",1000);
 
    ros::Rate loop_rate(hz);
@@ -445,8 +459,7 @@ int main(int argc, char** argv)
    geometry_msgs:: Twist sendmsg;
    geometry_msgs:: Twist lastmsg;
    boost::thread thrd(&spin_thread);
-   //thrd.join();
-   //cout<<"111111111111111111112222222222222222222"<<endl;
+
    int time_count=0;
    bool diff_thread_ok = false;
 

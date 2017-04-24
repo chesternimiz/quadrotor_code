@@ -24,7 +24,8 @@ double PI=acos(-1);
 class OdomHandle
 {
     public:
-    ros::Subscriber sub_yaw,sub_vel,sub_fix;
+    //ros::Subscriber sub_yaw,sub_vel,sub_fix;
+    ros::Subscriber sub,sub_fix;
     ros::Publisher pub;
     ros::Publisher neighbor_pub;
     double _px,_py,_vx,_vy;
@@ -35,10 +36,10 @@ class OdomHandle
     OdomHandle(int r_id)
     {
         ros::NodeHandle n;
-        //double xerror,yerror;
         yawrcv = false;
         velrcv = false;
         fixrcv = false;
+        /*
         stringstream ss;
         ss<<"/uav"<<r_id<<"/states/ardrone3/PilotingState/AttitudeChanged";
         sub_yaw = n.subscribe(ss.str(), 1000, &OdomHandle::yawcb,this);
@@ -48,6 +49,14 @@ class OdomHandle
         //pub = n.advertise<micros_flocking::Position>(ss1.str(),1000);
         sub_vel = n.subscribe(ss1.str(), 1000, &OdomHandle::velcb,this);
 
+        stringstream ss2;
+        ss2<<"/uav"<<r_id<<"/fix";
+        sub_fix = n.subscribe(ss2.str(), 1000, &OdomHandle::fixcb,this);
+        */
+        stringstream ss;
+        ss<<"/uav"<<r_id<<"/ground_truth/state";
+        sub = n.subscribe(ss.str(), 1000, &OdomHandle::cb,this);
+        
         stringstream ss2;
         ss2<<"/uav"<<r_id<<"/fix";
         sub_fix = n.subscribe(ss2.str(), 1000, &OdomHandle::fixcb,this);
@@ -110,6 +119,21 @@ class OdomHandle
         _py = utm_pt.easting;
         _px = utm_pt.northing;
         fixrcv = true;
+    }
+    
+     void cb(const nav_msgs::Odometry::ConstPtr & msg)
+    {
+        //cout<<this->_px<<" "<<_r_id<<" "<<_vy<<endl;
+       
+        //_px=msg->pose.pose.position.x;
+        //_py=msg->pose.pose.position.y;
+  
+        _vx=msg->twist.twist.linear.x;
+        _vy=msg->twist.twist.linear.y;
+
+        //_position.first=_px;_position.second=_py;
+        //_velocity.first=_vx;_velocity.second=_vy;
+        _theta = tf::getYaw(msg->pose.pose.orientation);
     }
 };
 
