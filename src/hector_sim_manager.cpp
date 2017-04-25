@@ -36,6 +36,7 @@ class OdomHandle
     double _px,_py,_vx,_vy;
     double _pz,_vz,_theta;
     int _r_id; 
+    int count;
     bool yawrcv,velrcv,fixrcv;
 
     double start_x, start_y;//起始位置坐标
@@ -84,8 +85,9 @@ class OdomHandle
         _pz=0;
         _vz=0;
         _r_id = r_id;
-        
-      
+        vx=r_id/3;
+        vy=r_id%3;
+       count =0;
     }
     
     void fixcb(const sensor_msgs::NavSatFix::ConstPtr & msg)
@@ -98,7 +100,9 @@ class OdomHandle
         _py = utm_pt.easting;
         _px = utm_pt.northing;
 
-        static int count=0;
+        
+        //if(_r_id==2)
+        //cout<<count<<endl;
         if(count<30)
         {
             start_x=utm_pt.northing;
@@ -114,12 +118,21 @@ class OdomHandle
             {
                 delta_x=((vx-stand_vx)*delta_dis+stand_x)-start_x;
                 delta_y=((vy-stand_vy)*delta_dis+stand_y)-start_y;
+                //if(_r_id ==2)
+                //cout<<delta_x<<" "<<delta_y<<endl;
+                cout<<"uav"<<_r_id<<" aligned"<<endl;
             }
 
             count++;
         }
+        else
+        {
+           _py = _py+delta_y - stand_y;
+           _px = _px+delta_x - stand_x;
+        }
 
         fixrcv = true;
+        _py = -_py;
     }
     
      void cb(const nav_msgs::Odometry::ConstPtr & msg)
@@ -163,10 +176,10 @@ int main(int argc, char** argv)
    for(int i=0;i<robotnum;i++)
    {
       OdomHandle *p=new OdomHandle(i);
-      int x=i/3;
-      int y=i%3;
-      p->vx=x;
-      p->vy=y;
+      //int x=i/3;
+      //int y=i%3;
+      //p->vx=x;
+     // p->vy=y;
 
       odom_list.push_back(p);
       adj_list.push_back(vector<int>());
@@ -191,7 +204,7 @@ int main(int argc, char** argv)
            sendmsg.px = odom_list[i]-> _px;
            sendmsg.py = odom_list[i]-> _py;
            sendmsg.vx = odom_list[i]-> _vx;
-           sendmsg.vy = odom_list[i]-> _py;
+           sendmsg.vy = odom_list[i]-> _vy;
            sendmsg.theta =  odom_list[i]-> _theta;
            odom_list[i]->pub.publish(sendmsg);
       }

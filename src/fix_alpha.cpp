@@ -2,8 +2,8 @@
 #include "tf/tf.h"
 #include "geometry_msgs/Twist.h"
 #include "micros_flocking/Neighbor.h"
-#include "micros_flocking/Position.h"
-#include "micros_flocking/Gradient.h"
+//#include "micros_flocking/Position.h"
+//#include "micros_flocking/Gradient.h"
 #include "sensor_msgs/NavSatFix.h"
 #include "nav_msgs/Odometry.h"
 #include "quadrotor_code/Status.h"
@@ -34,8 +34,8 @@ double baseomega = 0;
 double base_angle = 0;
 double vlvx = 0;
 double vlvy = 0;
-double targete = 0;//477508;
-double targetn = 0;//5523144;
+double targetx = 0;//477508;
+double targety = 0;//5523144;
 #define ploss 0 //max1000
 #define diffdrive false
 #define max_turn 0.7
@@ -103,7 +103,7 @@ class NeighborHandle
         //cout<<"neighbor pose updated"<<endl;
         //_vx=1;_vy=1;//myx=1;myy=1;
         //cout<<_r_id<<endl;
-    }*/
+    }
     
     void fixcb(const sensor_msgs::NavSatFix::ConstPtr & msg)
     {
@@ -137,7 +137,7 @@ class NeighborHandle
         _velocity.first=_vx;_velocity.second=_vy;
 
         
-    }
+    }*/
     
     void statuscb(const quadrotor_code::Status::ConstPtr & msg)
     {
@@ -205,7 +205,8 @@ static void neighbor_cb(const micros_flocking::Neighbor::ConstPtr & msg)
 }
 
 double my_gradient = -1;
-void my_vpoint_position_cb(const micros_flocking::Position::ConstPtr & msg)
+
+void my_vpoint_position_cb(const quadrotor_code::Status::ConstPtr & msg)
 {
     my_vpoint_position.first = msg->px;
     my_vpoint_position.second = msg->py;
@@ -230,7 +231,7 @@ void my_theta_cb(const quadrotor_code::Status::ConstPtr & msg)
     //cout<<"my pose updated"<<endl;
 }
 
-
+/*
 void my_position_cb(const sensor_msgs::NavSatFix::ConstPtr & msg)
 {
     
@@ -241,7 +242,7 @@ void my_position_cb(const sensor_msgs::NavSatFix::ConstPtr & msg)
   geodesy::UTMPoint utm_pt(geo_pt);
   my_position.first = utm_pt.easting;
   my_position.second = utm_pt.northing;
-}
+}*/
 
 pair<double,double> get_vector(pair<double,double> start,pair<double,double> end)
 {
@@ -334,7 +335,7 @@ pair<double,double> f_d()
     return re;
 }
 
-pair<double,double> q_r = pair<double,double>(targete,targetn);
+pair<double,double> q_r = pair<double,double>(targetx,targety);
 pair<double,double> p_r = pair<double,double>(basespeed,basespeed);
 pair<double,double> f_r()
 {
@@ -449,7 +450,7 @@ int main(int argc, char** argv)
    ros::Subscriber sub_theta = n.subscribe("position", 1000, my_theta_cb);
   
   // ros::Publisher gradient_pub = n.advertise<micros_flocking::Gradient>("gradient",1000);
-   ros::Publisher vpoint_pub = n.advertise<micros_flocking::Position>("vpoint_position",1000);
+   ros::Publisher vpoint_pub = n.advertise<quadrotor_code::Status>("vpoint_position",1000);
 
    ros::Rate loop_rate(hz);
    //ros::spin();
@@ -617,7 +618,7 @@ int main(int argc, char** argv)
       //my_vpoint_velocity.second = my_velocity.second;
       
 
-      micros_flocking::Position sendvpoint;
+      quadrotor_code::Status sendvpoint;
       sendvpoint.px =  my_vpoint_position.first;
       sendvpoint.py =  my_vpoint_position.second;
       sendvpoint.vx =  my_vpoint_velocity.first;
