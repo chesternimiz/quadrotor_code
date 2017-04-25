@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "tf/tf.h"
 #include "geometry_msgs/Twist.h"
-#include "micros_flocking/Neighbor.h"
+#include "quadrotor_code/Neighbor.h"
 //#include "micros_flocking/Position.h"
 //#include "micros_flocking/Gradient.h"
 #include "sensor_msgs/NavSatFix.h"
@@ -178,7 +178,7 @@ bool findInVector(int r_id,vector<int> v)
     return false;
 }
 
-static void neighbor_cb(const micros_flocking::Neighbor::ConstPtr & msg)
+static void neighbor_cb(const quadrotor_code::Neighbor::ConstPtr & msg)
 {
     if(rand()%1000<ploss && neighbor_loss)
              return;
