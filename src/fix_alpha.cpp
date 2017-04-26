@@ -17,7 +17,7 @@
 #include <boost/thread/thread.hpp> 
 #include <geodesy/utm.h>
 using namespace std;
-
+bool simulation = false;
 double PI=acos(-1);
 #define EPSILON 0.1
 #define A 5
@@ -466,13 +466,14 @@ int main(int argc, char** argv)
 
    p_r.first = vlvx + basespeed * cos(base_angle);
    p_r.second = vlvy + basespeed * sin(base_angle);
-
+   if(simulation){
    for(int i=0;i<3*hz;i++)
    {
          geometry_msgs:: Twist upmsg;
          upmsg.linear.z=1;
          pub.publish(upmsg);
          loop_rate.sleep();
+   }
    }
    while(my_position.first == 0)
    {
