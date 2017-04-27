@@ -1,3 +1,5 @@
+#define TF_EULER_DEFAULT_ZYX
+
 #include "ros/ros.h"
 #include "tf/tf.h"
 #include "nav_msgs/Odometry.h"
@@ -5,8 +7,10 @@
 #include "bebop_msgs/Ardrone3PilotingStateSpeedChanged.h"
 #include "quadrotor_code/Status.h"
 #include "quadrotor_code/Neighbor.h"
+#include <tf/LinearMath/Quaternion.h>
 #include <geodesy/utm.h>
 #include "sensor_msgs/NavSatFix.h"
+#include "geometry_msgs/PoseArray.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -42,6 +46,8 @@ class OdomHandle
     double start_x, start_y;//起始位置坐标
     int vx, vy;//在虚拟坐标系中的坐标
     double delta_x,delta_y;//误差向量
+    
+    double qx,qy,qz,qw;//orientation
    
     OdomHandle(int r_id)
     {
@@ -88,6 +94,7 @@ class OdomHandle
         vx=r_id/3;
         vy=r_id%3;
        count =0;
+       qx=0;qy=0;qz=0;qw=1;
     }
     
     void fixcb(const sensor_msgs::NavSatFix::ConstPtr & msg)
@@ -148,6 +155,10 @@ class OdomHandle
         //_position.first=_px;_position.second=_py;
         //_velocity.first=_vx;_velocity.second=_vy;
         _theta = tf::getYaw(msg->pose.pose.orientation);
+        qx= msg->pose.pose.orientation.x;
+        qy = msg->pose.pose.orientation.y;
+        qz = msg->pose.pose.orientation.z;
+        qw = msg->pose.pose.orientation.w;
     }
 };
 
@@ -173,6 +184,8 @@ int main(int argc, char** argv)
    bool param_ok = ros::param::get ("~robotnum", robotnum);
    //ofstream fout("/home/liminglong/czx/traject.txt");
    //ofstream fout2("/home/liminglong/czx/velocity.txt");
+   
+   ros::Publisher posepub = n.advertise<geometry_msgs::PoseArray>("/swarm_pose",1000);
    for(int i=0;i<robotnum;i++)
    {
       OdomHandle *p=new OdomHandle(i);
@@ -189,6 +202,24 @@ int main(int argc, char** argv)
    int count = 1;
    while(ros::ok())
    {
+      geometry_msgs::PoseArray sendpose;
+       sendpose.header.frame_id="world";
+      for(int i=0;i<robotnum;i++)
+      {
+          geometry_msgs::Pose p;
+         
+          
+          p.position.x = odom_list[i]-> _px;
+          p.position.y = odom_list[i]-> _py;
+          p.position.z = odom_list[i]-> _pz;
+          
+          p.orientation.x = odom_list[i] -> qx;
+          p.orientation.y = odom_list[i] -> qy;
+          p.orientation.z = odom_list[i] -> qz;
+          p.orientation.w = odom_list[i] -> qw;
+          sendpose.poses.push_back(p);
+      }
+      posepub.publish(sendpose);
       ros::spinOnce();
       for(int i=0;i<robotnum;i++)
       {

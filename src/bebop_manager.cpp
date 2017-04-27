@@ -1,3 +1,5 @@
+#define TF_EULER_DEFAULT_ZYX
+
 #include "ros/ros.h"
 #include "tf/tf.h"
 #include "nav_msgs/Odometry.h"
@@ -7,6 +9,8 @@
 #include "quadrotor_code/Neighbor.h"
 #include <geodesy/utm.h>
 #include "sensor_msgs/NavSatFix.h"
+#include <tf/LinearMath/Quaternion.h>
+#include "geometry_msgs/PoseArray.h"
 #include "std_msgs/Int32.h"
 #include <string>
 #include <list>
@@ -189,6 +193,7 @@ int main(int argc, char** argv)
    bool param_ok = ros::param::get ("~robotnum", robotnum);
    //ofstream fout("/home/liminglong/czx/traject.txt");
    //ofstream fout2("/home/liminglong/czx/velocity.txt");
+   ros::Publisher posepub = n.advertise<geometry_msgs::PoseArray>("/swarm_pose",1000);
    for(int i=0;i<robotnum;i++)
    {
       OdomHandle *p=new OdomHandle(i);
@@ -200,6 +205,26 @@ int main(int argc, char** argv)
    int count = 1;
    while(ros::ok())
    {
+      geometry_msgs::PoseArray sendpose;
+       sendpose.header.frame_id="world";
+      for(int i=0;i<robotnum;i++)
+      {
+          geometry_msgs::Pose p;
+         
+          
+          p.position.x = odom_list[i]-> _px;
+          p.position.y = odom_list[i]-> _py;
+          p.position.z = odom_list[i]-> _pz;
+          
+          tf::Quaternion q(odom_list[i]->_theta,0,0);
+          p.orientation.x = q.x();
+          p.orientation.y = q.y();
+          p.orientation.z = q.z();
+          p.orientation.w = q.w();
+          sendpose.poses.push_back(p);
+      }
+      posepub.publish(sendpose);
+      
       ros::spinOnce();
       for(int i=0;i<robotnum;i++)
       {

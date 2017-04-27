@@ -129,7 +129,12 @@ add_executable(fly_circle src/fly_circle.cpp)
 add_executable(hector_sim_manager src/hector_sim_manager.cpp)
 #add_dependencies(gpstest ${micros_flocking_EXPORTED_TARGETS})
 
-#add_dependencies(bebop_manager ${quadrotor_code_EXPORTED_TARGETS})
+add_dependencies(gpstest ${quadrotor_code_EXPORTED_TARGETS})
+add_dependencies(fixalpha ${quadrotor_code_EXPORTED_TARGETS})
+add_dependencies(hector_reset ${quadrotor_code_EXPORTED_TARGETS})
+add_dependencies(bebop_manager ${quadrotor_code_EXPORTED_TARGETS})
+add_dependencies(fly_circle ${quadrotor_code_EXPORTED_TARGETS})
+add_dependencies(hector_sim_manager ${quadrotor_code_EXPORTED_TARGETS})
 
 target_link_libraries( gpstest 
    ${catkin_LIBRARIES}
