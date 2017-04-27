@@ -7,6 +7,7 @@
 #include "quadrotor_code/Neighbor.h"
 #include <geodesy/utm.h>
 #include "sensor_msgs/NavSatFix.h"
+#include "std_msgs/Int32.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -21,6 +22,7 @@ using namespace std;
 #define perror 0  //value
 #define verror 0 //rate
 double PI=acos(-1);
+double stopdist = 1.5;
 
 double delta_dis=5; //无人机之间的间距
 int stand_vx=0, stand_vy=0;//作为标准的无人机的虚拟坐标
@@ -32,6 +34,7 @@ class OdomHandle
     ros::Subscriber sub_yaw,sub_vel,sub_fix;
     ros::Publisher pub;
     ros::Publisher neighbor_pub;
+    ros::Publisher stop_pub;
     double _px,_py,_vx,_vy;
     double _pz,_vz,_theta;
     int _r_id; 
@@ -54,9 +57,9 @@ class OdomHandle
         sub_yaw = n.subscribe(ss.str(), 1000, &OdomHandle::yawcb,this);
  
         stringstream ss1;
-        ss1<<"/uav"<<r_id<<"/states/ardrone3/PilotingState/SpeedChanged";
-        //pub = n.advertise<micros_flocking::Position>(ss1.str(),1000);
-        sub_vel = n.subscribe(ss1.str(), 1000, &OdomHandle::velcb,this);
+        //ss1<<"/uav"<<r_id<<"/states/ardrone3/PilotingState/SpeedChanged";
+        ss1<<"/uav"<<r_id<<"/velctrl/input";
+        sub_vel = n.subscribe(ss1.str(), 1000, &OdomHandle::velcb2,this);
 
         stringstream ss2;
         ss2<<"/uav"<<r_id<<"/fix";
@@ -69,6 +72,10 @@ class OdomHandle
         stringstream ss4;
         ss4<<"/uav"<<r_id<<"/neighbor";
         neighbor_pub = n.advertise<quadrotor_code::Neighbor>(ss4.str(),1000);
+        
+        stringstream ss5;
+        ss5<<"/uav"<<r_id<<"/stop";
+        stop_pub = n.advertise<std_msgs::Int32>(ss5.str(),1000);
         _px=0;
         _py=0;
         _vx=0;
@@ -109,6 +116,13 @@ class OdomHandle
     {
         _vx = msg->speedX;
         _vy = -msg->speedY;//NEU -> NWU
+        velrcv = true;
+    }
+    
+    void velcb2(const geometry_msgs::Twist::ConstPtr & msg)
+    {
+        _vx = msg->linear.x;
+        _vy = -msg->linear.y;//NEU -> NWU
         velrcv = true;
     }
     
@@ -195,6 +209,12 @@ int main(int argc, char** argv)
                 {
                     adj_list[i].push_back(j);
                     adj_list[j].push_back(i);
+                }
+                if(dist(i,j) < stopdist)
+                {
+                    std_msgs::Int32 stopmsg;
+                    for(int k=0;k<robotnum;k++)
+                        odom_list[k]->stop_pub.publish(stopmsg);
                 }
            }
            quadrotor_code::Status sendmsg;

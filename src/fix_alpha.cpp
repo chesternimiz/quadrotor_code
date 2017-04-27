@@ -28,7 +28,7 @@ const double C = abs(A-B) / sqrt(4*A*B);
 #define R 7
 #define C1 0.3
 #define C2 0.6
-#define rspeedlimit 0.5
+#define rspeedlimit 0.3
 double basespeed = 0;
 double baseomega = 0;
 double base_angle = 0;
