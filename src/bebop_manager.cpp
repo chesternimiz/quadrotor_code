@@ -206,7 +206,7 @@ int main(int argc, char** argv)
    while(ros::ok())
    {
       geometry_msgs::PoseArray sendpose;
-       sendpose.header.frame_id="world";
+       sendpose.header.frame_id="odom";
       for(int i=0;i<robotnum;i++)
       {
           geometry_msgs::Pose p;
