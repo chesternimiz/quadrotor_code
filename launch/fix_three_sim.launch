@@ -7,21 +7,17 @@
 -->
   <group ns='uav0'>
   <node name="fix_alpha" pkg="quadrotor_code" type="fixalpha" output="screen">
-  <remap from="cmd_vel" to="velctrl/input" />
   </node>
   </group>
   
   <group ns='uav1'>
   <node name="fix_alpha" pkg="quadrotor_code" type="fixalpha" output="screen">
-      <remap from="cmd_vel" to="velctrl/input" />
   </node>
    </group>
    
-   <group ns='uav2'>
+  <group ns='uav2'>
   <node name="fix_alpha" pkg="quadrotor_code" type="fixalpha" output="screen">
-      <remap from="cmd_vel" to="velctrl/input" />
   </node>
    </group>
-   
   
 </launch>

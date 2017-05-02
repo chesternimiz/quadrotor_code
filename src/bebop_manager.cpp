@@ -21,7 +21,7 @@
 #include <ctime>
 #include <fstream>
 using namespace std;
-#define R 7
+#define R 12
 #define sendT 1
 #define perror 0  //value
 #define verror 0 //rate
@@ -89,6 +89,10 @@ class OdomHandle
         _r_id = r_id;
         vx=r_id/3;
         vy=r_id%3;
+        if(r_id ==2)
+        {
+            vx = 1;vy = 0;
+        }
         count = 0;
       
     }
